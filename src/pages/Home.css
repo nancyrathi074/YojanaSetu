@@ -1,0 +1,71 @@
+/* HERO */
+
+.hero-image{
+
+    border-radius:20px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.15);
+
+}
+
+/* FEATURE CARDS */
+
+.feature-card{
+
+    transition:.35s;
+
+    border-radius:18px;
+
+}
+
+.feature-card:hover{
+
+    transform:translateY(-10px);
+
+}
+
+/* BUTTON */
+
+.btn-primary{
+
+    background:#1565C0 !important;
+
+    border:none !important;
+
+}
+
+.btn-primary:hover{
+
+    background:#0d47a1 !important;
+
+}
+
+/* HERO */
+
+.display-4{
+
+    color:#1e293b;
+
+}
+
+.lead{
+
+    color:#64748b;
+
+}
+
+/* CARD */
+
+.card{
+
+    border-radius:18px;
+
+}
+
+/* SECTION */
+
+section{
+
+    margin-top:30px;
+
+}

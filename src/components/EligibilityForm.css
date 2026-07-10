@@ -1,0 +1,60 @@
+.input-group-custom{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    padding:14px 16px;
+
+    background:white;
+
+}
+
+.input-group-custom svg{
+
+    color:#1565C0;
+
+    font-size:18px;
+
+}
+
+.input-group-custom input,
+.input-group-custom select{
+
+    width:100%;
+
+    border:none;
+
+    outline:none;
+
+    background:transparent;
+
+    font-size:16px;
+
+}
+
+.card{
+
+    border-radius:20px;
+
+}
+
+.btn-primary{
+
+    background:#1565C0;
+
+    border:none;
+
+}
+
+.btn-primary:hover{
+
+    background:#0d47a1;
+
+}

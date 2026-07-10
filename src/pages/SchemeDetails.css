@@ -1,0 +1,19 @@
+.card{
+
+    border-radius:20px;
+
+}
+
+.card h4{
+
+    color:#1565C0;
+
+    margin-top:25px;
+
+}
+
+.card p{
+
+    line-height:1.8;
+
+}

@@ -1,0 +1,33 @@
+.scheme-card{
+
+    border-radius:20px;
+
+    transition:.35s;
+
+}
+
+.scheme-card:hover{
+
+    transform:translateY(-8px);
+
+}
+
+.scheme-card h4{
+
+    color:#1565C0;
+
+}
+
+.progress{
+
+    height:12px;
+
+    border-radius:20px;
+
+}
+
+.card-footer{
+
+    padding:20px;
+
+}
