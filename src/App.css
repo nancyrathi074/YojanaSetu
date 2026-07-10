@@ -1,5 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+/* ===== Theme Colors ===== */
 
+:root{
+    --primary:#243B55;
+    --primary-hover:#35506F;
+    --gold:#D4AF37;
+    --bg:#F8FAFC;
+    --text:#1F2937;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+}
+/* Bootstrap Button Override */
+
+.btn-primary{
+    background:var(--primary) !important;
+    border-color:var(--primary) !important;
+}
+
+.btn-primary:hover{
+    background:var(--primary-hover) !important;
+    border-color:var(--primary-hover) !important;
+}
 *{
     margin:0;
     padding:0;
@@ -22,4 +46,7 @@ button{
 
 #root{
     width:100%;
+}
+.dashboard-title{
+    color:#7d3c8b;
 }

@@ -4,14 +4,13 @@ import { Link } from "react-router-dom";
 function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-
       <div className="container">
 
         {/* Logo */}
         <Link
-          className="navbar-brand fw-bold fs-3 text-primary"
-          to="/"
-        >
+  className="navbar-brand fw-bold fs-3 logo-text"
+  to="/"
+>
           YojanaSetu
         </Link>
 
@@ -33,7 +32,6 @@ function Navbar() {
           className="collapse navbar-collapse"
           id="navbarMenu"
         >
-
           <ul className="navbar-nav ms-auto align-items-lg-center">
 
             <li className="nav-item">
@@ -64,11 +62,9 @@ function Navbar() {
             </li>
 
           </ul>
-
         </div>
 
       </div>
-
     </nav>
   );
 }

@@ -29,7 +29,7 @@ function Dashboard() {
         className="text-center mb-5"
       >
 
-        <h1 className="display-4 fw-bold text-primary">
+        <h1 className="display-4 fw-bold dashboard-title">
           Welcome to YojanaSetu 👋
         </h1>
 

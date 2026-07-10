@@ -47,7 +47,7 @@
 
 .btn-primary{
 
-    background:#1565C0;
+    background:#7d3c8b;
 
     border:none;
 
@@ -57,4 +57,9 @@
 
     background:#0d47a1;
 
+}
+.section-title{
+    color:#7d3c8b;
+    font-size:40px;
+    letter-spacing:1px;
 }

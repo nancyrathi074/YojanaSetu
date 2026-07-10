@@ -1,43 +1,52 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
+
 import Navbar from "./components/Navbar";
 
 import Home from "./pages/Home";
-
 import FindSchemes from "./pages/FindSchemes";
+import Dashboard from "./pages/Dashboard";
 import SchemeDetails from "./pages/SchemeDetails";
 import NotFound from "./pages/NotFound";
+
 import "./App.css";
 
+function App() {
+  return (
+    <BrowserRouter>
 
-function App(){
+      <Navbar />
 
-return (
+      <Routes>
 
-<BrowserRouter>
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-<Navbar />
+        <Route
+          path="/schemes"
+          element={<FindSchemes />}
+        />
 
+        <Route
+          path="/dashboard"
+          element={<Dashboard />}
+        />
 
-<Routes>
-<Route
-path="/dashboard"
-element={<Dashboard />}
-/>
-<Route path="/" element={<Home />} />
-<Route path="*" element={<NotFound />} />
-<Route path="/schemes" element={<FindSchemes />} />
-<Route path="/details" element={<SchemeDetails />} />
+        <Route
+          path="/details"
+          element={<SchemeDetails />}
+        />
 
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
 
-</Routes>
+      </Routes>
 
-
-</BrowserRouter>
-
-);
-
+    </BrowserRouter>
+  );
 }
-
 
 export default App;

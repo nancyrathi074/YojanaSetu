@@ -74,9 +74,8 @@ function SchemeCard({ scheme }) {
 
           <div
             className="progress-bar bg-success"
-            style={{ width: `${scheme.score}%` }}
-          >
-            {scheme.score}%
+style={{ width: `${scheme.score || 0}%` }}          >
+            {scheme.score || 0}%
           </div>
 
         </div>

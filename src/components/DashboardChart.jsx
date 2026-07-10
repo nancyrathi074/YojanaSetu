@@ -35,15 +35,13 @@ function DashboardChart() {
 
         data: [2,2,2,1,2],
 
-        backgroundColor: [
-
-          "#0d6efd",
-          "#198754",
-          "#dc3545",
-          "#ffc107",
-          "#6f42c1"
-
-        ],
+        backgroundColor:[
+"#243B55",
+"#35506F",
+"#D4AF37",
+"#2F855A",
+"#6B7280"
+],
 
         borderWidth:1
 

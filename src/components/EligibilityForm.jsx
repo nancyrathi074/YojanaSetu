@@ -90,7 +90,7 @@ function EligibilityForm() {
 
     <div className="container py-5">
 
-      <h2 className="text-center text-primary fw-bold mb-5">
+      <h2 className="text-center section-title fw-bold mb-5">
         Find Government Schemes
       </h2>
 
