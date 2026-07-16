@@ -7,15 +7,34 @@ import {
 } from "react-icons/fa";
 
 import { motion } from "framer-motion";
-
-import schemes from "../data/schemes";
+import axios from "axios";
+import { useState, useEffect } from "react";
 import DashboardChart from "../components/DashboardChart";
 
 function Dashboard() {
 
+  const [schemes, setSchemes] = useState([]);
   const favorites =
     JSON.parse(localStorage.getItem("favorites")) || [];
+    useEffect(() => {
+  fetchSchemes();
+}, []);
 
+const fetchSchemes = async () => {
+  try {
+
+    const res = await axios.get(
+      "http://localhost:5000/api/schemes"
+    );
+
+    setSchemes(res.data.schemes);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+};
   return (
 
     <div className="container py-5">
