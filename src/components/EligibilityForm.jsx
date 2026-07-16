@@ -42,7 +42,7 @@ function EligibilityForm() {
   const fetchSchemes = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/schemes"
+        "https://yojanasetu-8omo.onrender.com/api/schemes"
       );
 
       setSchemes(res.data.schemes);
