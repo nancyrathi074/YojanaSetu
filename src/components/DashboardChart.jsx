@@ -51,24 +51,38 @@ function DashboardChart() {
 
   };
 
-  return (
+ return (
+<div
+  className="card shadow border-0 p-4 mt-5 mx-auto"
+  style={{ maxWidth: "700px" }}
+>
+    <h4 className="text-center text-primary mb-4">
+      Scheme Categories
+    </h4>
 
     <div
-      className="card shadow border-0 p-4 mt-5"
+      style={{
+        width: "420px",
+        height: "420px",
+        margin: "0 auto"
+      }}
     >
-
-      <h4 className="text-center text-primary mb-4">
-
-        Scheme Categories
-
-      </h4>
-
-      <Pie data={data} />
-
+      <Pie
+        data={data}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "top",
+            },
+          },
+        }}
+      />
     </div>
 
-  );
-
+  </div>
+);
 }
 
 export default DashboardChart;
