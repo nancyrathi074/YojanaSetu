@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import schemeRoutes from "./routes/schemeRoutes.js";
 import connectDB from "./config/db.js";
-
+import aiRoutes from "./routes/aiRoutes.js";
 dotenv.config();
 
 // Connect Database
@@ -17,6 +17,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/api/schemes", schemeRoutes);
+app.use("/api/ai", aiRoutes);
 // Test Route
 app.get("/", (req, res) => {
   res.status(200).json({

@@ -74,7 +74,7 @@ function SchemeCard({ scheme }) {
 
           <div
             className="progress-bar bg-success"
-style={{ width: `${scheme.score || 0}%` }}          >
+            style={{ width: `${scheme.score || 0}%` }}          >
             {scheme.score || 0}%
           </div>
 
@@ -85,7 +85,14 @@ style={{ width: `${scheme.score || 0}%` }}          >
           <br />
           {scheme.benefits}
         </p>
-
+          {scheme.aiReason && (
+           <div className="ai-reason-box">
+           <strong>🤖 Why AI recommends this</strong>
+           <p className="mb-0 mt-1">
+           {scheme.aiReason}
+          </p>
+           </div>
+           )}
         <p>
           <strong>Documents</strong>
           <br />

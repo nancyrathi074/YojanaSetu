@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import FindSchemes from "./pages/FindSchemes";
 import Dashboard from "./pages/Dashboard";
 import SchemeDetails from "./pages/SchemeDetails";
+import AIAssistant from "./pages/AIAssistant";
 import NotFound from "./pages/NotFound";
 
 import "./App.css";
@@ -20,6 +21,7 @@ function App() {
         <Route path="/schemes" element={<FindSchemes />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/details" element={<SchemeDetails />} />
+        <Route path="/ai-assistant" element={<AIAssistant />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 

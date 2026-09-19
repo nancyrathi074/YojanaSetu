@@ -31,3 +31,39 @@
     padding:20px;
 
 }
+.ai-reason-box {
+  background: #f0f7ff;
+  border-left: 4px solid #1565C0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 15px;
+  color: #334155;
+}
+
+.ai-reason-box strong {
+  color: #1565C0;
+  font-size: 14px;
+}
+
+.ai-reason-box p {
+  font-size: 14px;
+  line-height: 1.5;
+} 
+.ai-reason-box {
+  background: #f0f7ff;
+  border-left: 4px solid #1565C0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 15px;
+  color: #334155;
+}
+
+.ai-reason-box strong {
+  color: #1565C0;
+  font-size: 14px;
+}
+
+.ai-reason-box p {
+  font-size: 14px;
+  line-height: 1.5;
+}

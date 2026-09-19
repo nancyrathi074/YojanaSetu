@@ -51,7 +51,11 @@ function Navbar() {
                 Dashboard
               </Link>
             </li>
-
+            <li className="nav-item">
+  <Link className="nav-link" to="/ai-assistant">
+    AI Assistant 🤖
+  </Link>
+</li>
             <li className="nav-item ms-lg-3">
               <Link
                 to="/schemes"
