@@ -25,7 +25,7 @@ function AIAssistant() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/ai/ask",
+        "https://yojanasetu-8omo.onrender.com/api/ai/ask",
         {
           method: "POST",
           headers: {
