@@ -282,3 +282,18 @@
     flex-direction: column;
   }
 }
+.ai-recommendations {
+  scroll-margin-top: 90px;
+}
+
+.ai-formatted-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.ai-list-number {
+  flex-shrink: 0;
+  font-weight: 600;
+}

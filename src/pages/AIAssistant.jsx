@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useRef } from "react";
 import SchemeCard from "../components/SchemeCard";
 import "./AIAssistant.css";
 
@@ -9,10 +10,9 @@ function AIAssistant() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // -----------------------------------------
-  // Ask AI
-  // -----------------------------------------
+  const recommendationsRef = useRef(null);
 
+  // Ask AI
   const askAI = async () => {
     if (!message.trim()) {
       return;
@@ -49,26 +49,88 @@ function AIAssistant() {
       setReply(data.aiMessage || "");
 
       // Recommended schemes
-      setRecommendations(
-        data.recommendations || []
-      );
+      const results = data.recommendations || [];
+      setRecommendations(results);
 
+      // Scroll to recommendations after rendering
+      if (results.length > 0) {
+        setTimeout(() => {
+          recommendationsRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 150);
+      }
     } catch (error) {
       console.error("AI Error:", error);
 
       setError(
-        "Unable to connect to YojanaSetu AI. Please make sure the backend and Ollama are running."
+        "Unable to connect to YojanaSetu AI. Please check that the backend is running and your Groq API configuration is correct."
       );
-
     } finally {
       setLoading(false);
     }
   };
 
-  // -----------------------------------------
-  // Enter key
-  // -----------------------------------------
+  // Format basic Markdown in the AI response
+  const formatReply = (text) => {
+    const lines = text.split("\n");
 
+    return lines.map((line, lineIndex) => {
+      const parts = line
+        .split(/(\*\*.*?\*\*)/)
+        .map((part, partIndex) => {
+          if (
+            part.startsWith("**") &&
+            part.endsWith("**")
+          ) {
+            return (
+              <strong key={partIndex}>
+                {part.slice(2, -2)}
+              </strong>
+            );
+          }
+
+          return (
+            <span key={partIndex}>{part}</span>
+          );
+        });
+
+      const numberedLine = line.match(/^\s*(\d+)\.\s+(.*)$/);
+
+      if (numberedLine) {
+        const content = numberedLine[2].split(/(\*\*.*?\*\*)/);
+
+        return (
+          <div className="ai-formatted-list-item" key={lineIndex}>
+            <span className="ai-list-number">
+              {numberedLine[1]}.
+            </span>
+            <span>
+              {content.map((part, partIndex) =>
+                part.startsWith("**") &&
+                part.endsWith("**") ? (
+                  <strong key={partIndex}>
+                    {part.slice(2, -2)}
+                  </strong>
+                ) : (
+                  <span key={partIndex}>{part}</span>
+                )
+              )}
+            </span>
+          </div>
+        );
+      }
+
+      return (
+        <div key={lineIndex}>
+          {parts}
+        </div>
+      );
+    });
+  };
+
+  // Enter key
   const handleKeyDown = (event) => {
     if (
       event.key === "Enter" &&
@@ -79,10 +141,7 @@ function AIAssistant() {
     }
   };
 
-  // -----------------------------------------
-  // Suggested Question
-  // -----------------------------------------
-
+  // Suggested question
   const useSuggestion = (question) => {
     setMessage(question);
     setReply("");
@@ -92,15 +151,10 @@ function AIAssistant() {
 
   return (
     <div className="ai-page">
-
       <div className="container py-5">
 
-        {/* =====================================
-            PAGE HEADER
-        ====================================== */}
-
+        {/* Page Header */}
         <div className="text-center mb-5">
-
           <div className="ai-badge">
             🤖 YojanaSetu AI
           </div>
@@ -114,41 +168,23 @@ function AIAssistant() {
             government schemes using your personal
             information.
           </p>
-
         </div>
 
-
-        {/* =====================================
-            AI QUESTION CARD
-        ====================================== */}
-
+        {/* AI Question Card */}
         <div className="ai-card">
-
-          {/* AI Header */}
-
           <div className="ai-card-header">
-
             <div className="ai-icon">
               🤖
             </div>
 
             <div>
-              <h4>
-                YojanaSetu AI Assistant
-              </h4>
-
-              <p>
-                Ask questions about government schemes
-              </p>
+              <h4>YojanaSetu AI Assistant</h4>
+              <p>Ask questions about government schemes</p>
             </div>
-
           </div>
 
-
           {/* Question Input */}
-
           <div className="ai-input-section">
-
             <label htmlFor="aiQuestion">
               What would you like to know?
             </label>
@@ -165,11 +201,7 @@ function AIAssistant() {
               onKeyDown={handleKeyDown}
             />
 
-
-            {/* Input Footer */}
-
             <div className="ai-input-footer">
-
               <small>
                 Press Enter to ask • Shift + Enter
                 for a new line
@@ -179,91 +211,54 @@ function AIAssistant() {
                 type="button"
                 className="btn btn-primary rounded-pill px-4"
                 onClick={askAI}
-                disabled={
-                  loading ||
-                  !message.trim()
-                }
+                disabled={loading || !message.trim()}
               >
-
                 {loading ? (
                   <>
                     <span
                       className="spinner-border spinner-border-sm me-2"
                       role="status"
                       aria-hidden="true"
-                    ></span>
-
+                    />
                     Thinking...
                   </>
                 ) : (
-                  <>
-                    Ask AI ✨
-                  </>
+                  <>Ask AI ✨</>
                 )}
-
               </button>
-
             </div>
-
           </div>
 
-
-          {/* =================================
-              ERROR MESSAGE
-          ================================== */}
-
+          {/* Error Message */}
           {error && (
             <div className="alert alert-danger mt-4">
               {error}
             </div>
           )}
 
-
-          {/* =================================
-              AI RESPONSE
-          ================================== */}
-
+          {/* AI Response */}
           {reply && (
-
             <div className="ai-response">
-
               <div className="response-header">
-
                 <span className="response-avatar">
                   🤖
                 </span>
 
                 <div>
-
-                  <strong>
-                    YojanaSetu AI
-                  </strong>
-
-                  <small>
-                    AI-powered response
-                  </small>
-
+                  <strong>YojanaSetu AI</strong>
+                  <small>AI-powered response</small>
                 </div>
-
               </div>
-
 
               <div className="response-content">
-                {reply}
+                {formatReply(reply)}
               </div>
-
             </div>
-
           )}
 
-
-          {/* =================================
-              LOADING MESSAGE
-          ================================== */}
-
+          {/* Loading Message */}
           {loading && (
             <div className="ai-loading">
-
               <div className="ai-loading-icon">
                 🤖
               </div>
@@ -272,31 +267,22 @@ function AIAssistant() {
                 <strong>
                   YojanaSetu AI is thinking...
                 </strong>
-
                 <p>
                   Checking your information and
                   finding relevant schemes.
                 </p>
               </div>
-
             </div>
           )}
-
         </div>
 
-
-        {/* =====================================
-            AI RECOMMENDATIONS
-        ====================================== */}
-
+        {/* AI Recommendations */}
         {recommendations.length > 0 && (
-
-          <div className="ai-recommendations">
-
-            {/* Section Header */}
-
+          <div
+            className="ai-recommendations"
+            ref={recommendationsRef}
+          >
             <div className="text-center mb-4">
-
               <div className="recommendation-badge">
                 🎯 AI Powered Recommendations
               </div>
@@ -309,49 +295,30 @@ function AIAssistant() {
                 These recommendations are based on
                 the information you provided.
               </p>
-
             </div>
-
-
-            {/* Recommendation Cards */}
 
             <div className="row g-4">
-
-              {recommendations.map(
-                (scheme) => (
-
-                  <div
-                    className="col-lg-6"
-                    key={scheme._id}
-                  >
-
-                    <SchemeCard
-                      scheme={{
-                        ...scheme,
-
-                        aiReason:
-                          scheme.matchReasons &&
-                          scheme.matchReasons.length > 0
-                            ? scheme.matchReasons.join(" ")
-                            : "This scheme may be relevant based on the information provided."
-                      }}
-                    />
-
-                  </div>
-
-                )
-              )}
-
+              {recommendations.map((scheme) => (
+                <div
+                  className="col-lg-6"
+                  key={scheme._id || scheme.name}
+                >
+                  <SchemeCard
+                    scheme={{
+                      ...scheme,
+                      aiReason:
+                        scheme.matchReasons &&
+                        scheme.matchReasons.length > 0
+                          ? scheme.matchReasons.join(" ")
+                          : "This scheme may be relevant based on the information provided.",
+                    }}
+                  />
+                </div>
+              ))}
             </div>
 
-
-            {/* Disclaimer */}
-
             <div className="ai-disclaimer">
-
-              <strong>
-                ℹ️ Important:
-              </strong>
+              <strong>ℹ️ Important:</strong>
 
               <span>
                 AI recommendations are based on the
@@ -361,57 +328,34 @@ function AIAssistant() {
                 application requirements on the official
                 government website.
               </span>
-
             </div>
-
           </div>
-
         )}
 
-
-        {/* =====================================
-            NO RECOMMENDATIONS
-        ====================================== */}
-
+        {/* No Recommendations */}
         {!loading &&
           reply &&
           recommendations.length === 0 && (
-
             <div className="no-recommendations">
-
               <div className="no-recommendations-icon">
                 🔍
               </div>
 
-              <h5>
-                No matching schemes found
-              </h5>
+              <h5>No matching schemes found</h5>
 
               <p>
                 Try providing more information such
                 as your age, occupation, or annual
                 income.
               </p>
-
             </div>
-
           )}
 
-
-        {/* =====================================
-            SUGGESTED QUESTIONS
-        ====================================== */}
-
+        {/* Suggested Questions */}
         <div className="suggestions-section">
-
-          <h5>
-            Try asking
-          </h5>
+          <h5>Try asking</h5>
 
           <div className="suggestions">
-
-            {/* Student */}
-
             <button
               type="button"
               onClick={() =>
@@ -422,9 +366,6 @@ function AIAssistant() {
             >
               🎓 Schemes for students
             </button>
-
-
-            {/* Income */}
 
             <button
               type="button"
@@ -437,9 +378,6 @@ function AIAssistant() {
               💰 Schemes based on income
             </button>
 
-
-            {/* Documents */}
-
             <button
               type="button"
               onClick={() =>
@@ -451,9 +389,6 @@ function AIAssistant() {
               📄 Required documents
             </button>
 
-
-            {/* Search */}
-
             <button
               type="button"
               onClick={() =>
@@ -464,13 +399,10 @@ function AIAssistant() {
             >
               🔍 Find suitable schemes
             </button>
-
           </div>
-
         </div>
 
       </div>
-
     </div>
   );
 }

@@ -1,4 +1,6 @@
+
 import express from "express";
+import Groq from "groq-sdk";
 import Scheme from "../models/Scheme.js";
 
 const router = express.Router();
@@ -7,29 +9,40 @@ router.post("/ask", async (req, res) => {
   try {
     const { message } = req.body;
 
-    if (!message || !message.trim()) {
+    if (
+      typeof message !== "string" ||
+      !message.trim()
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please enter a question."
       });
     }
 
-    const userMessage = message.toLowerCase();
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "Groq API key is not configured."
+      });
+    }
 
-    // -----------------------------------------
-    // Extract AGE
-    // -----------------------------------------
+    const userMessage = message.trim().toLowerCase();
 
+    // Initialize Groq securely on the backend
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY
+    });
+
+    // 1. Extract age
     const ageMatch = userMessage.match(
       /(\d{1,2})\s*(?:year|years|yr|yrs)?\s*old/
     );
 
-    const age = ageMatch ? Number(ageMatch[1]) : null;
+    const age = ageMatch
+      ? Number(ageMatch[1])
+      : null;
 
-    // -----------------------------------------
-    // Extract INCOME
-    // -----------------------------------------
-
+    // 2. Extract annual income
     let income = null;
 
     const lakhMatch = userMessage.match(
@@ -44,16 +57,13 @@ router.post("/ask", async (req, res) => {
       /(?:₹|rs\.?|inr)\s*([\d,]+)/
     );
 
-    if (incomeNumberMatch && !income) {
+    if (incomeNumberMatch && income === null) {
       income = Number(
         incomeNumberMatch[1].replace(/,/g, "")
       );
     }
 
-    // -----------------------------------------
-    // Detect OCCUPATION
-    // -----------------------------------------
-
+    // 3. Detect occupation
     let occupation = null;
 
     if (
@@ -69,10 +79,7 @@ router.post("/ask", async (req, res) => {
       occupation = "Job Seeker";
     }
 
-    // -----------------------------------------
-    // Find candidate schemes
-    // -----------------------------------------
-
+    // 4. Find candidate schemes in MongoDB
     const filters = [];
 
     if (age !== null) {
@@ -91,10 +98,16 @@ router.post("/ask", async (req, res) => {
     if (occupation !== null) {
       filters.push({
         occupation: {
-          $regex: new RegExp(`^${occupation}$`, "i")
+          $regex: new RegExp(
+            `^${occupation}$`,
+            "i"
+          )
         }
       });
     }
+
+    const fields =
+      "name category description benefits occupation maxIncome minAge maxAge documents link";
 
     let schemes;
 
@@ -102,97 +115,117 @@ router.post("/ask", async (req, res) => {
       schemes = await Scheme.find({
         $and: filters
       })
-        .select(
-          "name category description benefits occupation maxIncome minAge maxAge documents link"
-        )
+        .select(fields)
         .lean();
     } else {
       schemes = await Scheme.find({})
-        .select(
-          "name category description benefits occupation maxIncome minAge maxAge documents link"
-        )
+        .select(fields)
         .limit(10)
         .lean();
     }
 
-    // -----------------------------------------
-    // Calculate Match Score
-    // -----------------------------------------
+    // 5. Calculate rule-based match scores
+    const stopWords = [
+      "i", "am", "a", "an", "the", "is", "are",
+      "my", "me", "for", "to", "of", "and", "with",
+      "which", "what", "can", "could", "would", "be",
+      "in", "on", "government", "scheme", "schemes",
+      "suitable", "apply"
+    ];
+
+    const keywords = userMessage
+      .replace(/[₹,.!?]/g, " ")
+      .split(/\s+/)
+      .filter(
+        (word) =>
+          word.length > 2 &&
+          !stopWords.includes(word)
+      );
 
     const scoredSchemes = schemes.map((scheme) => {
       let score = 0;
-      let matchedCriteria = 0;
-      let totalCriteria = 0;
-
       const reasons = [];
 
-      // Age = 30 points
+      // Age match: 25 points
       if (age !== null) {
-        totalCriteria += 30;
-
         if (
           age >= scheme.minAge &&
           age <= scheme.maxAge
         ) {
-          score += 30;
-          matchedCriteria += 30;
-          reasons.push("Your age matches the scheme.");
+          score += 25;
+          reasons.push(
+            "Your age matches the scheme."
+          );
         }
       }
 
-      // Occupation = 40 points
+      // Occupation match: 30 points
       if (occupation !== null) {
-        totalCriteria += 40;
-
         if (
-          scheme.occupation &&
-          scheme.occupation.toLowerCase() ===
-            occupation.toLowerCase()
+          scheme.occupation?.toLowerCase() ===
+          occupation.toLowerCase()
         ) {
-          score += 40;
-          matchedCriteria += 40;
-          reasons.push("Your occupation matches the scheme.");
-        }
-      }
-
-      // Income = 30 points
-      if (income !== null) {
-        totalCriteria += 30;
-
-        if (income <= scheme.maxIncome) {
           score += 30;
-          matchedCriteria += 30;
-          reasons.push("Your income is within the scheme limit.");
+          reasons.push(
+            "Your occupation matches the scheme."
+          );
         }
       }
 
-      // Normalize score based on information provided
-      const finalScore =
-        totalCriteria > 0
-          ? Math.round(
-              (matchedCriteria / totalCriteria) * 100
-            )
-          : 0;
+      // Income match: 25 points
+      if (income !== null) {
+        if (income <= scheme.maxIncome) {
+          score += 25;
+          reasons.push(
+            "Your income is within the scheme limit."
+          );
+        }
+      }
+
+      // Question relevance: up to 20 points
+      const schemeText = `
+        ${scheme.name}
+        ${scheme.category}
+        ${scheme.description}
+        ${scheme.benefits}
+        ${scheme.occupation}
+      `.toLowerCase();
+
+      const uniqueMatches = [
+        ...new Set(
+          keywords.filter((keyword) =>
+            schemeText.includes(keyword)
+          )
+        )
+      ];
+
+      if (uniqueMatches.length > 0) {
+        score += Math.min(
+          20,
+          uniqueMatches.length * 5
+        );
+
+        reasons.push(
+          "The scheme is relevant to your question."
+        );
+      }
 
       return {
         ...scheme,
-        score: finalScore,
+        score,
         matchReasons: reasons
       };
     });
 
-    // Sort highest match first
     scoredSchemes.sort(
       (a, b) => b.score - a.score
     );
 
-    // Only send top 5 to AI/frontend
-    const recommendations = scoredSchemes.slice(0, 5);
+    const recommendations = scoredSchemes
+      .filter((scheme) => scheme.score > 0)
+      .slice(0, 5);
 
-    // -----------------------------------------
-    // Prepare AI context
-    // -----------------------------------------
-
+    // 6. Ask Groq to explain the recommendations
     const schemeContext = recommendations
       .map(
         (scheme, index) => `
@@ -201,77 +234,63 @@ Name: ${scheme.name}
 Category: ${scheme.category}
 Benefits: ${scheme.benefits}
 Match Score: ${scheme.score}%
-Why it matches: ${scheme.matchReasons.join(", ")}
+Reasons: ${scheme.matchReasons.join(" ")}
 `
       )
       .join("\n");
 
-    // -----------------------------------------
-    // Ask Ollama for a short explanation
-    // -----------------------------------------
+    let aiMessage;
 
-    const aiResponse = await fetch(
-      "http://localhost:11434/api/generate",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama3.2",
+    if (recommendations.length === 0) {
+      aiMessage =
+        "I couldn't find matching schemes in the current database. Try including your age, occupation, annual income, or the type of assistance you need.";
+    } else {
+      const completion =
+        await groq.chat.completions.create({
+          model: "openai/gpt-oss-20b",
+          messages: [
+            {
+              role: "system",
+              content: `
+You are YojanaSetu AI, a helpful government
+scheme assistant.
 
-          prompt: `
-You are YojanaSetu AI.
-
-The backend has already calculated the eligibility
-match scores.
-
+The backend calculates all match scores.
+Never change or recalculate these scores.
+Use only the schemes supplied in the context.
+Never invent eligibility rules, benefits, or schemes.
+Explain briefly why these recommendations may help.
+Clearly state that final eligibility must be verified
+on the official government scheme website.
+Keep the answer under 100 words.
+`
+            },
+            {
+              role: "user",
+              content: `
 User question:
-${message}
+${message.trim()}
 
-Top recommended schemes:
-
+Database recommendations:
 ${schemeContext}
 
-Write a SHORT helpful introduction for the user.
+Write a short, helpful introduction to these results.
+`
+            }
+          ],
+          temperature: 0.2,
+          max_completion_tokens: 180
+        });
 
-Rules:
-- Do not calculate or change the match scores.
-- Do not invent schemes.
-- Do not invent eligibility requirements.
-- Do not repeat the complete scheme information.
-- Keep it under 80 words.
-- Tell the user that the recommendations are based
-  on the information they provided.
-- Remind them that final eligibility should be
-  verified using the official scheme information.
-`,
-
-          stream: false,
-
-          options: {
-            temperature: 0.2,
-            num_predict: 120
-          }
-        })
-      }
-    );
-
-    if (!aiResponse.ok) {
-      throw new Error(
-        `Ollama returned status ${aiResponse.status}`
-      );
+      aiMessage =
+        completion.choices[0]?.message?.content?.trim() ||
+        "Here are the schemes that may match your information. Please verify eligibility on the official websites.";
     }
 
-    const aiData = await aiResponse.json();
-
-    // -----------------------------------------
-    // Final response
-    // -----------------------------------------
-
-    res.status(200).json({
+    // 7. Return results to the React frontend
+    return res.status(200).json({
       success: true,
-      aiMessage: aiData.response,
+      aiMessage,
       recommendations,
       userInfo: {
         age,
@@ -279,13 +298,16 @@ Rules:
         occupation
       }
     });
-
   } catch (error) {
-    console.error("AI Error:", error);
+    console.error(
+      "YojanaSetu AI Error:",
+      error.message
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Unable to connect to YojanaSetu AI."
+      message:
+        "Unable to generate an AI response. Please try again."
     });
   }
 });
